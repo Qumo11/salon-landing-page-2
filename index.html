@@ -157,7 +157,13 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
 .sec-head p{color:var(--muted);font-size:17px}
 .rule{width:64px;height:1px;background:var(--gold);margin:24px auto 0;position:relative}
 .rule::after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;background:var(--gold);transform:translate(-50%,-50%) rotate(45deg)}
-.hero{position:relative;min-height:96vh;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(rgba(26,21,16,.56),rgba(26,21,16,.66)),url('img/slide3.jpg') center/cover no-repeat;background-color:#1A1510;padding:90px 0}
+.hero{position:relative;min-height:96vh;display:flex;align-items:center;justify-content:center;text-align:center;background-color:#1A1510;overflow:hidden;padding:90px 0}
+/* Rozmyte zdjecie w tle (jak na svahaspa) — na osobnej warstwie, zeby tekst
+   i przyciski zostaly ostre. Powiekszenie scale(1.12) ukrywa jasne krawedzie
+   powstajace przy rozmyciu. */
+.hero::before{content:'';position:absolute;inset:0;z-index:0;background:url('img/slide3.jpg') center/cover no-repeat;filter:blur(7px);transform:scale(1.12)}
+/* Ciemna nakladka na zdjecie — dla czytelnosci bialego tekstu */
+.hero::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(rgba(26,21,16,.5),rgba(26,21,16,.62))}
 .hero-frame{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:56px 48px;border:1px solid rgba(246,240,231,.28);background:rgba(24,19,14,.42);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .hero-frame::before,.hero-frame::after{content:'';position:absolute;width:18px;height:18px;border:1px solid var(--gold-soft)}
 .hero-frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
@@ -178,7 +184,7 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
 .hero-badge span{font-size:8.5px;letter-spacing:.24em;margin-top:5px}
 .counter{margin-top:22px;font-size:14px;color:rgba(246,240,231,.8)}
 .counter strong{font-family:'Lustria',serif;font-size:19px;color:var(--gold-soft)}
-.hero-meta{position:absolute;left:0;right:0;bottom:30px;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:13px;letter-spacing:.04em;color:rgba(246,240,231,.78)}
+.hero-meta{position:absolute;z-index:2;left:0;right:0;bottom:30px;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:13px;letter-spacing:.04em;color:rgba(246,240,231,.78)}
 .hero-meta b{font-weight:500;color:var(--gold-soft)}
 .hero-meta .sep{width:4px;height:4px;border-radius:50%;background:var(--gold);align-self:center}
 @media(max-width:720px){.hero-badge{width:74px;height:74px;top:16px;right:16px}.hero-badge b{font-size:20px}.hero-frame{padding:44px 22px}}
