@@ -214,6 +214,8 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
 .form-sec .rule,.form-sec .rule::after{background:var(--gold-soft)}
 .form-card{background:var(--paper);border:1px solid var(--line);padding:46px 38px;box-shadow:var(--shadow-lg)}
 .field{margin-bottom:22px}
+/* Pole-pulapka na boty (honeypot): poza ekranem, niewidoczne dla ludzi i czytnikow */
+.hp-field{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
 label{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:9px;font-weight:500}
 input[type=text],input[type=tel],input[type=email]{width:100%;padding:16px 18px;font-family:'Roboto',sans-serif;font-size:16px;font-weight:300;background:#fff;border:1px solid var(--line);border-radius:6px;color:var(--ink);transition:border-color .15s,box-shadow .15s}
 input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(183,141,101,.2)}
@@ -430,6 +432,13 @@ footer a:hover{text-decoration:underline}
           <input type="email" id="email" name="email" autocomplete="email" placeholder="anna@example.com">
         </div>
 
+        <!-- Pole-pulapka na boty. Ludzie go nie widza (jest poza ekranem).
+             Jesli cokolwiek tu wpadnie, traktujemy zgloszenie jako spam. -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="company">Nie wype&#322;niaj tego pola</label>
+          <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
+        </div>
+
         <div class="consent">
           <input type="checkbox" id="rodo" name="zgoda">
           <label for="rodo">
@@ -575,6 +584,7 @@ const btn = document.getElementById('submitBtn');
 const nameI = document.getElementById('name');
 const phoneI = document.getElementById('phone');
 const rodoI = document.getElementById('rodo');
+const hpI = document.getElementById('company');   // pole-pulapka (honeypot)
 
 function fail(msg, el){
   errMsg.textContent = msg;
@@ -604,6 +614,15 @@ function validPhone(v){
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearErr();
+
+  /* Honeypot: ukryte pole "company" widza tylko boty. Jesli jest wypelnione,
+     udajemy sukces (zeby bot nie wiedzial, ze go zlapalismy) i NIC nie zapisujemy. */
+  if (hpI.value.trim() !== '') {
+    form.style.display = 'none';
+    formHead.style.display = 'none';
+    thanks.classList.add('show');
+    return;
+  }
 
   if (nameI.value.trim().length < 2) { track('form_error'); return fail('Podaj swoje imię.', nameI); }
   if (!validPhone(phoneI.value))     { track('form_error'); return fail('Podaj poprawny numer telefonu (9 cyfr).', phoneI); }
