@@ -36,8 +36,9 @@ h1,h2,h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;line-hei
 .gate-box .sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:30px}
 label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);margin-bottom:8px}
-input[type=email]{width:100%;padding:15px 16px;font-family:inherit;font-size:16.5px;font-weight:300;
+input[type=email],input[type=password]{width:100%;padding:15px 16px;font-family:inherit;font-size:16.5px;font-weight:300;
   background:#fff;border:1px solid var(--line);border-radius:2px;color:var(--ink)}
+.or-sep{text-align:center;margin:18px 0 4px;font-size:12.5px;color:var(--muted)}
 input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(176,141,87,.2)}
 .btn{display:inline-block;border:none;cursor:pointer;font-family:inherit;font-size:15px;
   letter-spacing:.05em;padding:15px 28px;border-radius:2px;transition:all .18s ease;
@@ -157,8 +158,17 @@ footer{padding:40px 0 60px;text-align:center;font-size:12.5px;color:var(--muted)
     <form id="loginForm">
       <label for="email">Twój e-mail</label>
       <input type="email" id="email" autocomplete="email" placeholder="ty@example.com" required>
-      <button type="submit" class="btn btn-full" id="loginBtn">Wyślij link do logowania</button>
+
+      <label for="password" style="margin-top:18px">Hasło
+        <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(jeśli masz)</span></label>
+      <input type="password" id="password" autocomplete="current-password" placeholder="••••••••">
+
+      <button type="submit" class="btn btn-full" id="loginBtn">Zaloguj hasłem</button>
     </form>
+
+    <div class="or-sep">albo bez hasła:</div>
+    <button class="btn btn-ghost btn-full" id="magicBtn">Wyślij link logowania na e-mail</button>
+
     <div class="msg" id="loginMsg"></div>
   </div>
 </div>
@@ -242,20 +252,41 @@ const $  = id => document.getElementById(id);
 const gate = $('gate'), app = $('app');
 let days = 30, leads = [];
 
-/* ---------- LOGOWANIE (magic link — bez hasła) ---------- */
+/* ---------- LOGOWANIE HASŁEM ---------- */
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
-  if (!sb) return showMsg('Najpierw uzupełnij konfigurację na dole pliku admin.html.', 'bad');
+  if (!sb) return showMsg('Najpierw uzupełnij konfigurację na dole pliku.', 'bad');
+
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  if (!password) return showMsg('Wpisz hasło — albo użyj „Wyślij link logowania na e-mail" poniżej.', 'bad');
 
   const btn = $('loginBtn');
+  btn.disabled = true; btn.textContent = 'Logowanie...';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+
+  btn.disabled = false; btn.textContent = 'Zaloguj hasłem';
+  if (error) return showMsg('Nie udało się zalogować hasłem: ' + error.message, 'bad');
+  /* sukces → onAuthStateChange wpuszcza do panelu */
+});
+
+/* ---------- LOGOWANIE LINKIEM (magic link — bez hasła) ---------- */
+$('magicBtn').addEventListener('click', async () => {
+  if (!sb) return showMsg('Najpierw uzupełnij konfigurację na dole pliku.', 'bad');
+
+  const email = $('email').value.trim();
+  if (!email) return showMsg('Wpisz najpierw swój e-mail.', 'bad');
+
+  const btn = $('magicBtn');
   btn.disabled = true; btn.textContent = 'Wysyłanie...';
 
   const { error } = await sb.auth.signInWithOtp({
-    email: $('email').value.trim(),
+    email,
     options: { emailRedirectTo: window.location.href }
   });
 
-  btn.disabled = false; btn.textContent = 'Wyślij link do logowania';
+  btn.disabled = false; btn.textContent = 'Wyślij link logowania na e-mail';
   if (error) return showMsg('Nie udało się: ' + error.message, 'bad');
   showMsg('Sprawdź skrzynkę — wysłaliśmy link do logowania. Kliknij go na TYM urządzeniu.', 'ok');
 });
