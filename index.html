@@ -825,5 +825,27 @@ window.addEventListener('load', async () => {
   reg.forEach(el => io.observe(el));
 })();
 </script>
+<!-- ===== ZART / PRANK (TYMCZASOWE — do usuniecia) =====
+     Aktywne WYLACZNIE gdy adres ma ?prank (np. .../index.html?prank).
+     Bez tego strona dziala normalnie dla wszystkich. ===== -->
+<script>
+(function(){
+  if (!new URLSearchParams(location.search).has('prank')) return;
+  var btn = document.querySelector('.hero .btn-primary');
+  if (!btn) return;
+  btn.style.willChange = 'transform';
+  btn.style.transition = 'transform .12s ease';
+  function flee(e){
+    if (e) e.preventDefault();
+    var dx = (Math.random()<0.5?-1:1)*(90 + Math.random()*160);
+    var dy = (Math.random()<0.5?-1:1)*(70 + Math.random()*140);
+    btn.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+  }
+  btn.addEventListener('mouseenter', flee);
+  btn.addEventListener('mousemove', flee);
+  btn.addEventListener('click', flee);           // blokuje klikniecie
+  btn.addEventListener('touchstart', flee, {passive:false});
+})();
+</script>
 </body>
 </html>
