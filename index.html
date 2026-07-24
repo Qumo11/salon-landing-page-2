@@ -656,6 +656,13 @@ form.addEventListener('submit', async (e) => {
   } catch (err) {
     btn.disabled = false;
     btn.textContent = 'Odbierz voucher −30%';
+
+    /* 23505 = ten numer telefonu jest juz w bazie (blokada duplikatow).
+       Zamiast bledu pokazujemy spokojny komunikat. */
+    const dup = err && (err.code === '23505'
+      || /duplicate|unique/i.test(String(err.message || '')));
+    if (dup) { track('form_error'); return fail('Ten numer jest już u nas zapisany — spokojnie, jesteś na liście.', phoneI); }
+
     fail('Coś poszło nie tak. Spróbuj ponownie za chwilę.');
   }
 });
