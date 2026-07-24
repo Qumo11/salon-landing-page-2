@@ -38,6 +38,10 @@ create table if not exists public.leads (
   created_at   timestamptz not null default now()
 );
 create index if not exists leads_created_idx on public.leads (created_at);
+-- Jeden numer telefonu = jedna rejestracja (porownanie po samych cyfrach,
+-- wiec "600 100 200" i "600100200" licza sie jako ten sam numer).
+create unique index if not exists leads_telefon_uniq
+  on public.leads ((regexp_replace(telefon, '[^0-9]', '', 'g')));
 
 
 -- ---------- 2. KTO JEST ADMINEM  <<< PODMIEN E-MAIL >>> ----------
