@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>document.documentElement.classList.add('js')</script>
+<script>
+/* Zawsze wchodzimy na GORE strony (hero). Bez tego, gdy adres ma na koncu
+   #zapis (z wczesniejszego klikniecia "Odbierz voucher"), przegladarka skakala
+   od razu do formularza. Kotwica #zapis dalej dziala po kliknieciu przyciskow. */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+</script>
 <title>Sabai | Masaż tajski wkrótce w Jarosławiu</title>
 <meta name="description" content="Prawdziwe terapeutki z Tajlandii i rytuały, które są czymś więcej niż masażem. Zostaw kontakt i odbierz voucher -30% na pierwszą wizytę.">
 <meta name="robots" content="index, follow">
