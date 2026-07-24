@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add('js')</script>
+<title>Sabai | Masaż tajski wkrótce w Jarosławiu</title>
+<meta name="description" content="Prawdziwe terapeutki z Tajlandii i rytuały, które są czymś więcej niż masażem. Zostaw kontakt i odbierz voucher -30% na pierwszą wizytę.">
+<meta name="robots" content="index, follow">
+
+<meta property="og:title" content="Masaż tajski wkrótce w Jarosławiu">
+<meta property="og:description" content="Prawdziwe terapeutki z Tajlandii i rytuały, które są czymś więcej niż masażem. Zostaw kontakt i odbierz voucher -30% na pierwszą wizytę.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pl_PL">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lustria&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     META PIXEL — WKLEJ TU SWOJE ID Z MENEDŻERA REKLAM
+     Zamień PIXEL_ID_TUTAJ na numer (np. 1234567890).
+     Bez tego NIE ZMIERZYSZ testu — to najważniejsza linijka na stronie.
+     ============================================================ -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+var PIXEL_ID = 'PIXEL_ID_TUTAJ';
+if (PIXEL_ID !== 'PIXEL_ID_' + 'TUTAJ') { fbq('init', PIXEL_ID); fbq('track', 'PageView'); }
+</script>
+
+<!-- ============================================================
+     SUPABASE — BAZA I WŁASNA ANALITYKA (zasila panel admin.html)
+     Wklej dwie rzeczy z Supabase -> Project Settings -> Data API / API Keys.
+     Dopóki tu jest TUTAJ_WKLEJ_..., strona działa w trybie DEMO:
+     nic nie zapisuje, ale też nic nie psuje.
+
+     Ten klucz JEST publiczny i to jest OK — sam z siebie nic nie otwiera.
+     Danych pilnują reguły RLS w bazie (supabase-setup.sql).
+     NIGDY nie wklejaj tu klucza "service_role" — ten omija wszystkie reguły.
+     ============================================================ -->
+<script type="module">
+const SUPABASE_URL      = 'TUTAJ_WKLEJ_URL';        // np. https://abcdefgh.supabase.co
+const SUPABASE_ANON_KEY = 'TUTAJ_WKLEJ_ANON_KEY';   // długi ciąg od eyJ...
+
+const ON = !SUPABASE_URL.startsWith('TUTAJ') && !SUPABASE_ANON_KEY.startsWith('TUTAJ');
+
+let sb = null;
+if (ON) {
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+/* Losowy identyfikator wizyty. Świadomie NIE zbieramy IP ani niczego, po czym
+   dałoby się kogoś rozpoznać — to zwykły losowy ciąg, który ginie po zamknięciu
+   karty. Wystarczy, żeby odróżnić "10 wejść jednej osoby" od "10 różnych osób",
+   a nie robi z nas firmy śledzącej ludzi po internecie. */
+function sessionId(){
+  let s = sessionStorage.getItem('sabai_sid');
+  if (!s) {
+    s = (crypto.randomUUID?.() || String(Math.random()).slice(2) + Date.now());
+    sessionStorage.setItem('sabai_sid', s);
+  }
+  return s;
+}
+
+const params = new URLSearchParams(location.search);
+const meta = () => ({
+  session_id:   sessionId(),
+  device:       matchMedia('(max-width:720px)').matches ? 'mobile' : 'desktop',
+  referrer:     document.referrer ? new URL(document.referrer).hostname : null,
+  utm_source:   params.get('utm_source'),
+  utm_campaign: params.get('utm_campaign')
+});
+
+/* Jedno zdarzenie leci w DWA miejsca naraz: do Twojej bazy (widzisz je w panelu
+   od razu) i do Piksela Meta (widzisz je w Menedżerze zdarzeń, gdy już go
+   podepniesz). Meta jest dodatkiem, nie warunkiem — panel działa bez niej. */
+window.sabaiTrack = async function(name, fbEvent){
+  if (fbEvent && typeof fbq === 'function') fbq('track', fbEvent);
+  if (!sb) { console.log('[DEMO] zdarzenie:', name); return; }
+  try {
+    await sb.from('events').insert({ name, ...meta() });
+  } catch (e) {
+    /* Analityka NIGDY nie może wywrócić strony. Jak nie zapisze — trudno. */
+    console.warn('track failed', e);
+  }
+};
+
+window.sabaiSaveLead = async function(data){
+  if (!sb) { console.log('[DEMO] Zgłoszenie NIE zostało zapisane:', data); return; }
+  const { error } = await sb.from('leads').insert({ ...data, ...pick(meta()) });
+  if (error) throw error;
+};
+const pick = m => ({ session_id:m.session_id, utm_source:m.utm_source, utm_campaign:m.utm_campaign });
+
+/* Prawdziwa liczba zapisanych — zasila licznik w hero.
+   Ta funkcja w bazie oddaje TYLKO liczbę, nigdy żadnych danych osobowych. */
+window.sabaiLeadCount = async function(){
+  if (!sb) return 0;
+  const { data, error } = await sb.rpc('public_lead_count');
+  return error ? 0 : data;
+};
+
+window.SABAI_ON = ON;
+
+/* Wejście na stronę */
+sabaiTrack('page_view');
+
+/* Kliknięcia w przyciski — wystarczy dopisać data-track="nazwa" do elementu */
+addEventListener('click', e => {
+  const el = e.target.closest('[data-track]');
+  if (el) sabaiTrack(el.dataset.track);
+}, { passive:true });
+</script>
+
+<style>
+:root{
+  --cream:#EBE1D0; --cream-2:#E0D4C0; --paper:#F5EFE4;
+  --ink:#2C221C; --muted:#73655C;
+  --gold:#B78D65; --gold-dark:#8A6A4A; --gold-soft:#D8C4A6;
+  --green:#404A3D;
+  --line:rgba(44,34,28,.13);
+  --shadow:0 6px 34px rgba(44,34,28,.09);
+  --shadow-lg:0 18px 60px rgba(44,34,28,.14);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:300;color:var(--ink);background:var(--cream);line-height:1.75;font-size:17px;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Lustria',Georgia,serif;font-weight:400;line-height:1.2}
+img{max-width:100%;display:block}
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 26px}
+.narrow{max-width:680px}
+.eyebrow{display:inline-flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.32em;text-transform:uppercase;font-weight:500;color:var(--gold-dark)}
+.eyebrow::before,.eyebrow::after{content:'';width:30px;height:1px;background:var(--gold)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:11px;cursor:pointer;border:none;font-family:'Roboto',sans-serif;font-size:14px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:16px 34px;border-radius:999px;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease,background .2s ease,color .2s ease}
+.btn-primary{background:var(--ink);color:var(--cream);box-shadow:0 8px 26px rgba(44,34,28,.28)}
+.btn-primary:hover{background:var(--gold-dark);transform:translateY(-2px)}
+.btn-full{display:flex;width:100%}
+.btn .ar{transition:transform .2s ease}
+.btn:hover .ar{transform:translateX(4px)}
+section{padding:100px 0}
+.sec-head{text-align:center;max-width:640px;margin:0 auto 60px}
+.sec-head .eyebrow{margin-bottom:20px}
+h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:balance}
+.sec-head p{color:var(--muted);font-size:17px}
+.rule{width:64px;height:1px;background:var(--gold);margin:24px auto 0;position:relative}
+.rule::after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;background:var(--gold);transform:translate(-50%,-50%) rotate(45deg)}
+.hero{position:relative;min-height:96vh;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(rgba(26,21,16,.56),rgba(26,21,16,.66)),url('img/slide3.jpg') center/cover no-repeat;padding:90px 0}
+.hero-frame{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:56px 48px;border:1px solid rgba(246,240,231,.28);background:rgba(24,19,14,.42);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.hero-frame::before,.hero-frame::after{content:'';position:absolute;width:18px;height:18px;border:1px solid var(--gold-soft)}
+.hero-frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
+.hero-frame::after{bottom:-1px;right:-1px;border-left:none;border-top:none}
+.hero .eyebrow{color:var(--gold-soft)}
+.hero .eyebrow::before,.hero .eyebrow::after{background:var(--gold-soft)}
+.hero .brand{font-family:'Lustria',serif;font-size:clamp(14px,3vw,17px);letter-spacing:.5em;text-transform:uppercase;color:var(--gold-soft);display:block;margin:24px 0 20px;text-indent:.5em}
+.hero h1{font-size:clamp(38px,7.6vw,70px);color:#fff;line-height:1.06;margin-bottom:16px}
+.hero h1 em{display:block;font-style:italic;color:var(--gold-soft);font-size:.56em;margin-top:.18em}
+.hero-tag{font-family:'Lustria',serif;font-style:italic;font-size:clamp(18px,4vw,24px);color:rgba(246,240,231,.86);margin-bottom:24px}
+.hero-sub{font-size:16.5px;color:rgba(246,240,231,.88);max-width:520px;margin:0 auto 32px}
+.hero-sub strong{font-weight:500;color:#fff}
+.hero-badge{position:absolute;z-index:3;top:34px;right:34px;width:102px;height:102px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#E0C093,#B0824F 88%);color:#2C221C;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(6deg);box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.4)}
+.hero-badge b{font-family:'Lustria',serif;font-size:27px;color:#2C221C;line-height:1}
+.hero-badge span{font-size:8.5px;letter-spacing:.24em;margin-top:5px}
+.counter{margin-top:22px;font-size:14px;color:rgba(246,240,231,.8)}
+.counter strong{font-family:'Lustria',serif;font-size:19px;color:var(--gold-soft)}
+.hero-meta{position:absolute;left:0;right:0;bottom:30px;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:13px;letter-spacing:.04em;color:rgba(246,240,231,.78)}
+.hero-meta b{font-weight:500;color:var(--gold-soft)}
+.hero-meta .sep{width:4px;height:4px;border-radius:50%;background:var(--gold);align-self:center}
+@media(max-width:720px){.hero-badge{width:74px;height:74px;top:16px;right:16px}.hero-badge b{font-size:20px}.hero-frame{padding:44px 22px}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+.card{background:var(--paper);border:1px solid var(--line);padding:44px 30px;text-align:center;position:relative;transition:transform .25s ease,box-shadow .25s ease}
+.card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:44px;height:2px;background:var(--gold)}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.card .ico{width:50px;height:50px;margin:6px auto 22px;color:var(--gold-dark)}
+.card .ico svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.2}
+.card h3{font-size:22px;margin-bottom:12px;color:var(--ink)}
+.card p{font-size:15px;color:var(--muted);line-height:1.7}
+.mood{background:var(--cream-2)}
+.mood-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;height:440px}
+.mood-col{display:grid;gap:16px}
+.ph{position:relative;overflow:hidden;background:#3A2E24;background-size:cover;background-position:center;border:1px solid rgba(183,141,101,.4)}
+.ph.has-photo::before{display:none}
+.ph::before{content:'';position:absolute;inset:0;opacity:.4;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%23B78D65' stroke-width='.9'%3E%3Cpath d='M60 18c-9 13-9 26 0 39 9-13 9-26 0-39z'/%3E%3Cpath d='M60 57v45'/%3E%3C/g%3E%3C/svg%3E");background-size:120px 120px;background-position:center}
+.ph span{position:absolute;left:0;right:0;bottom:0;padding:22px 20px;font-family:'Lustria',serif;font-size:20px;color:#fff;z-index:2;background:linear-gradient(to top,rgba(30,25,20,.82),transparent)}
+/* "Ozywienie" — powolny refleks swiatla przesuwajacy sie po kafelku,
+   jak odblask na wodzie / przy swiecach. Wylacza sie, gdy ktos ma
+   ustawione "ogranicz animacje" (dostepnosc). */
+.ph::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(115deg,transparent 42%,rgba(216,196,166,.22) 50%,transparent 58%);
+  background-size:260% 100%;background-position:140% 0}
+@media (prefers-reduced-motion: no-preference){
+  .ph::after{animation:phSheen 7s linear infinite}
+  .ph:nth-child(2) .ph::after,.mood-col .ph:last-child::after{animation-delay:2.5s}
+}
+@keyframes phSheen{from{background-position:140% 0}to{background-position:-40% 0}}
+.ph-note{text-align:center;font-size:12.5px;color:var(--muted);margin-top:18px;font-style:italic}
+@media(max-width:720px){.mood-grid{grid-template-columns:1fr;height:auto}.ph{height:220px}}
+.offer{background:var(--cream)}
+.offer-box{background:var(--paper);border:1px solid var(--line);border-top:2px solid var(--gold);padding:52px 40px;box-shadow:var(--shadow)}
+.perks{list-style:none;display:grid;gap:26px;max-width:480px;margin:0 auto}
+.perks li{display:flex;gap:18px;align-items:flex-start;text-align:left}
+.perks .num{flex:0 0 40px;height:40px;border-radius:50%;border:1px solid var(--gold);color:var(--gold-dark);display:flex;align-items:center;justify-content:center;font-family:'Lustria',serif;font-size:16px}
+.perks strong{display:block;font-weight:500;color:var(--ink);font-size:17px;margin-bottom:2px}
+.perks span.d{font-size:14.5px;color:var(--muted)}
+.form-sec{background:linear-gradient(160deg,#4A3A2D,#2C221C);position:relative}
+.form-sec .eyebrow{color:var(--gold-soft)}
+.form-sec .eyebrow::before,.form-sec .eyebrow::after{background:var(--gold-soft)}
+.form-sec h2{color:#fff}
+.form-sec .sec-head p{color:rgba(255,255,255,.82)}
+.form-sec .rule,.form-sec .rule::after{background:var(--gold-soft)}
+.form-card{background:var(--paper);border:1px solid var(--line);padding:46px 38px;box-shadow:var(--shadow-lg)}
+.field{margin-bottom:22px}
+label{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:9px;font-weight:500}
+input[type=text],input[type=tel],input[type=email]{width:100%;padding:16px 18px;font-family:'Roboto',sans-serif;font-size:16px;font-weight:300;background:#fff;border:1px solid var(--line);border-radius:6px;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(183,141,101,.2)}
+input.err{border-color:#c0563f;box-shadow:0 0 0 3px rgba(192,86,63,.16)}
+.opt{font-size:11px;letter-spacing:.04em;color:var(--muted);text-transform:none}
+.consent{display:flex;gap:13px;align-items:flex-start;margin:24px 0}
+.consent input{flex:0 0 20px;width:20px;height:20px;margin-top:3px;accent-color:var(--gold-dark);cursor:pointer}
+.consent label{font-size:12.6px;line-height:1.6;color:var(--muted);text-transform:none;letter-spacing:0;cursor:pointer;margin:0;font-weight:400}
+.consent a{color:var(--gold-dark);font-weight:500}
+.err-msg{color:#c0563f;font-size:13.5px;margin-top:8px;display:none}
+.err-msg.show{display:block}
+.micro{text-align:center;font-size:12.5px;color:var(--muted);margin-top:20px;line-height:1.65}
+.thanks{display:none;text-align:center;padding:20px 10px}
+.thanks.show{display:block;animation:fade .5s ease}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.thanks .check{width:70px;height:70px;margin:0 auto 24px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center}
+.thanks .check svg{width:32px;height:32px;stroke:var(--gold-dark);fill:none;stroke-width:1.5}
+.thanks h3{font-size:30px;color:var(--ink);margin-bottom:12px}
+.thanks p{color:var(--muted);max-width:400px;margin:0 auto}
+.faq{background:var(--cream)}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-q{width:100%;background:none;border:none;cursor:pointer;font-family:'Lustria',serif;display:flex;justify-content:space-between;align-items:center;gap:18px;padding:26px 0;text-align:left;font-size:19px;color:var(--ink)}
+.faq-q:hover{color:var(--gold-dark)}
+.faq-q .pm{flex:0 0 auto;color:var(--gold);font-size:22px;transition:transform .25s;line-height:1}
+.faq-item.open .pm{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.faq-item.open .faq-a{max-height:480px}
+.faq-a p{padding:0 0 26px;color:var(--muted);font-size:15.5px}
+/* ===== BANER CTA z paralaksa (tak jak svahaspa: tlo przyklejone) ===== */
+.cta-band{position:relative;padding:130px 26px;text-align:center;overflow:hidden;background:#1A1510;background-image:url('img/cta.webp');background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed}
+.cta-band::before{content:'';position:absolute;inset:0;background:rgba(44,34,28,.55);z-index:1}
+.cta-band .cta-inner{position:relative;z-index:2;max-width:680px;margin:0 auto}
+.cta-band h2{color:#fff;margin-bottom:14px}
+.cta-band p{color:rgba(255,255,255,.85);font-size:18px;margin-bottom:30px}
+.btn-light{background:#fff;color:var(--ink)}
+.btn-light:hover{background:var(--cream);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+@media(max-width:720px){.cta-band{background-attachment:scroll;padding:96px 22px}}
+footer{background:var(--ink);color:rgba(246,240,231,.62);padding:64px 0 44px;text-align:center}
+footer .brand{font-family:'Lustria',serif;font-size:22px;letter-spacing:.4em;text-indent:.4em;text-transform:uppercase;color:#fff;margin-bottom:16px}
+footer a{color:var(--gold-soft);text-decoration:none}
+footer a:hover{text-decoration:underline}
+.foot-links{margin:20px 0;display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-size:14px}
+.foot-note{font-size:12.4px;color:rgba(246,240,231,.42);margin:22px auto 0;max-width:540px;line-height:1.7}
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(246,240,231,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .3s ease}
+.sticky.show{transform:none}
+@media(min-width:721px){.sticky{display:none}}
+.modal{position:fixed;inset:0;z-index:100;display:none;background:rgba(44,34,28,.55);backdrop-filter:blur(4px);padding:20px;overflow-y:auto}
+.modal.show{display:flex;align-items:flex-start;justify-content:center}
+.modal-box{background:var(--cream);max-width:640px;width:100%;margin:auto;padding:44px 34px;position:relative;border-top:2px solid var(--gold)}
+.modal-box h3{font-size:26px;margin-bottom:8px;color:var(--ink)}
+.modal-box h4{font-family:'Roboto',sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dark);margin:22px 0 6px;font-weight:500}
+.modal-box p{font-size:14.5px;color:var(--muted)}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:30px;line-height:1;color:var(--muted);cursor:pointer}
+@media (prefers-reduced-motion: no-preference){
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .75s cubic-bezier(.22,.61,.36,1)}
+  .reveal.is-visible{opacity:1;transform:none}
+}
+@media(max-width:720px){section{padding:72px 0}.card{padding:36px 26px}.offer-box,.form-card{padding:34px 24px}}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-badge" aria-hidden="true"><b>&minus;30%</b><span>VOUCHER</span></div>
+  <div class="hero-frame">
+    <span class="eyebrow">Wkr&oacute;tce w Jaros&#322;awiu</span>
+    <span class="brand">Sabai</span>
+    <h1>Masa&#380; tajski<em>jakiego jeszcze nie znasz</em></h1>
+    <p class="hero-tag">Miejsce, w kt&oacute;rym czas zwalnia.</p>
+    <p class="hero-sub">
+      Prawdziwe terapeutki z Tajlandii i rytua&#322;y, kt&oacute;re s&#261; czym&#347; wi&#281;cej ni&#380; masa&#380;em.
+      Zostaw kontakt i odbierz <strong>voucher &minus;30%</strong> na pierwsz&#261; wizyt&#281;,
+      przygotowany dla <strong>pierwszych 100 os&oacute;b</strong>.
+    </p>
+    <a href="#zapis" class="btn btn-primary" data-track="click_cta_hero">Odbierz voucher &minus;30% <span class="ar">&rarr;</span></a>
+    <p class="counter" id="counter" style="display:none">
+      Ju&#380; <strong id="counterN">&hellip;</strong> os&oacute;b czeka na otwarcie
+    </p>
+  </div>
+  <div class="hero-meta">
+    <span>Otwarcie <b>jesie&#324; 2026</b></span>
+    <span class="sep"></span>
+    <span>Bez op&#322;at i zobowi&#261;za&#324;</span>
+  </div>
+</header>
+
+<!-- ================= DLACZEGO MY ================= -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Dlaczego Sabai</span>
+      <h2>Chwila tylko dla Ciebie</h2>
+      <p>Przekraczasz pr&oacute;g i ca&#322;y po&#347;piech zostaje po drugiej stronie drzwi. Zostaje zapach olejk&oacute;w, ciep&#322;o i cisza.</p>
+      <div class="rule"></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="ico"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C9 6 9 10 12 14c3-4 3-8 0-12z"/><path d="M12 14v8"/><path d="M12 18c-4-1-6.5-3.5-7.5-7.5C8.5 11.5 11 14 12 18z"/><path d="M12 18c4-1 6.5-3.5 7.5-7.5C15.5 11.5 13 14 12 18z"/></svg></div>
+        <h3>Terapeutki z Tajlandii</h3>
+        <p>Certyfikowane specjalistki, kt&oacute;re sztuki masa&#380;u uczy&#322;y si&#281; u &#378;r&oacute;d&#322;a, w Tajlandii. To do&#347;wiadczenie czu&#263; w ka&#380;dym ruchu.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.5 2.5-1 4 0 5.5C13 7 13.5 5.5 12 3z"/><path d="M12 8.5v3"/><circle cx="12" cy="15.5" r="5.5"/><path d="M9 15.5c1.2-1.6 4.8-1.6 6 0"/></svg></div>
+        <h3>Rytua&#322; od pierwszej chwili</h3>
+        <p>Zaczyna si&#281; na d&#322;ugo przed samym masa&#380;em. Obmycie st&oacute;p, zapach olejk&oacute;w, ciep&#322;a herbata i cisza. Ka&#380;dy szczeg&oacute;&#322; jest tu przemy&#347;lany.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8c3-3 6-3 8 0 2-3 5-3 8 0"/><path d="M4 14c3-3 6-3 8 0 2-3 5-3 8 0"/><path d="M4 20c3-3 6-3 8 0 2-3 5-3 8 0"/></svg></div>
+        <h3>Rytua&#322;y i pakiety</h3>
+        <p>Klasyczny masa&#380; tajski, ceremonie na ciep&#322;ych olejkach, rytua&#322;y dla dwojga i pakiety, kt&oacute;re &#322;&#261;cz&#261; je w ca&#322;o&#347;&#263;. Cz&#281;&#347;&#263; z nich odkryjesz dopiero u nas.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M3 13h18"/><path d="M12 9v12"/><path d="M12 9C10.5 6 8 5 6.5 6.2 5 7.4 6.5 9 12 9z"/><path d="M12 9c1.5-3 4-4 5.5-2.8C19 7.4 17.5 9 12 9z"/></svg></div>
+        <h3>Idealny prezent</h3>
+        <p>Podaruj komu&#347; czas wy&#322;&#261;cznie dla siebie. To prezent, kt&oacute;ry zostaje w pami&#281;ci znacznie d&#322;u&#380;ej ni&#380; rzeczy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NASTROJ / ZDJECIA ================= -->
+<section class="mood">
+  <div class="wrap">
+    <div class="mood-grid">
+      <div class="ph has-photo" style="background-image:url('img/mood1.jpg')"><span>Olejki, ciep&#322;o, cisza</span></div>
+      <div class="mood-col">
+        <div class="ph has-photo" style="background-image:url('img/mood2.jpg')"><span>Rytua&#322;</span></div>
+        <div class="ph has-photo" style="background-image:url('img/mood3.jpg')"><span>Dotyk, kt&oacute;ry koi</span></div>
+      </div>
+    </div>
+    <p class="ph-note">Zdj&#281;cia pogl&#261;dowe. Salon jest w przygotowaniu.</p>
+  </div>
+</section>
+
+<!-- ================= OFERTA ================= -->
+<section class="offer">
+  <div class="wrap narrow">
+    <div class="sec-head">
+      <span class="eyebrow">Dla pierwszych go&#347;ci</span>
+      <h2>B&#261;d&#378; w&#347;r&oacute;d pierwszych</h2>
+      <p>Zostaw kontakt, a odezwiemy si&#281;, gdy tylko b&#281;dziemy gotowi otworzy&#263; drzwi.</p>
+      <div class="rule"></div>
+    </div>
+    <div class="offer-box">
+      <ul class="perks">
+        <li>
+          <span class="num">1</span>
+          <span><strong>Voucher &minus;30% na pierwsz&#261; wizyt&#281;</strong>
+          <span class="d">Wyj&#261;tkowa cena, kt&oacute;ra po otwarciu ju&#380; nie wr&oacute;ci.</span></span>
+        </li>
+        <li>
+          <span class="num">2</span>
+          <span><strong>Pierwsze&#324;stwo rezerwacji</strong>
+          <span class="d">Wybierasz termin, zanim rusz&#261; zapisy dla wszystkich.</span></span>
+        </li>
+        <li>
+          <span class="num">3</span>
+          <span><strong>Wiadomo&#347;&#263; o otwarciu</strong>
+          <span class="d">Damy Ci zna&#263;, gdy otworzymy drzwi. Jeden SMS, bez spamu.</span></span>
+        </li>
+      </ul>
+      <p style="text-align:center;margin-top:38px">
+        <a href="#zapis" class="btn btn-primary" data-track="click_cta_offer">Zapisz si&#281;</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FORMULARZ ================= -->
+<section class="form-sec" id="zapis">
+  <div class="wrap narrow">
+    <div class="sec-head" id="formHead">
+      <span class="eyebrow">Zostaw kontakt</span>
+      <h2>Zostaw imi&#281; i telefon</h2>
+      <p>Wy&#347;lemy Ci voucher &minus;30% SMS-em, zanim jeszcze otworzymy drzwi.</p>
+      <div class="rule"></div>
+    </div>
+
+    <div class="form-card">
+      <form id="leadForm" novalidate>
+        <div class="field">
+          <label for="name">Imi&#281;</label>
+          <input type="text" id="name" name="imie" autocomplete="given-name" placeholder="Anna">
+        </div>
+        <div class="field">
+          <label for="phone">Telefon</label>
+          <input type="tel" id="phone" name="telefon" autocomplete="tel" inputmode="numeric" maxlength="11" placeholder="600 100 200">
+        </div>
+        <div class="field">
+          <label for="email">E-mail <span class="opt">(opcjonalnie)</span></label>
+          <input type="email" id="email" name="email" autocomplete="email" placeholder="anna@example.com">
+        </div>
+
+        <div class="consent">
+          <input type="checkbox" id="rodo" name="zgoda">
+          <label for="rodo">
+            Wyra&#380;am zgod&#281; na przetwarzanie moich danych (imi&#281;, telefon) w celu kontaktu
+            w sprawie otwarcia salonu i przes&#322;ania vouchera. Administratorem danych jest
+            <strong style="font-weight:500">[NAZWA FIRMY]</strong>. Zgod&#281; mog&#281; wycofa&#263; w ka&#380;dej chwili.
+            <a href="#" id="ppLink">Polityka prywatno&#347;ci</a>.
+          </label>
+        </div>
+        <p class="err-msg" id="errMsg"></p>
+
+        <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Odbierz voucher &minus;30%</button>
+
+        <p class="micro">
+          Bez zobowi&#261;za&#324;. Nie pobieramy &#380;adnych op&#322;at.<br>
+          Twoje dane wykorzystamy wy&#322;&#261;cznie do kontaktu ws. otwarcia.
+        </p>
+      </form>
+
+      <div class="thanks" id="thanks">
+        <div class="check">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 7"/></svg>
+        </div>
+        <h3>Do zobaczenia</h3>
+        <p>Dzi&#281;kujemy. Odezwiemy si&#281; SMS-em, gdy tylko otworzymy drzwi. Tw&oacute;j voucher &minus;30% b&#281;dzie czeka&#322;.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="faq">
+  <div class="wrap narrow">
+    <div class="sec-head">
+      <span class="eyebrow">Pytania</span>
+      <h2>Dobrze wiedzie&#263;</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">Kiedy otwarcie? <span class="pm">+</span></button>
+      <div class="faq-a"><p>Planujemy jesie&#324; 2026. Dok&#322;adnej daty jeszcze nie og&#322;aszamy. Osoby, kt&oacute;re zostawi&#261; nam kontakt, dowiedz&#261; si&#281; SMS-em jako pierwsze.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Czy w Jaros&#322;awiu nie ma ju&#380; masa&#380;u tajskiego? <span class="pm">+</span></button>
+      <div class="faq-a"><p>Jest i dobrze, bo to znaczy, &#380;e jest na niego popyt. Nie udajemy pierwszych. Chcemy da&#263; Ci wyb&oacute;r, prawdziwe tajskie terapeutki i miejsce, z kt&oacute;rego nie chce si&#281; wychodzi&#263;.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Ile b&#281;dzie kosztowa&#322; masa&#380;? <span class="pm">+</span></button>
+      <div class="faq-a"><p>Stawiamy na jako&#347;&#263;, nie na najni&#380;sz&#261; cen&#281;. Orientacyjnie oko&#322;o 200 z&#322; za 60 minut. Z voucherem pierwsza wizyta jest o 30% ta&#324;sza.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Gdzie b&#281;dzie salon? <span class="pm">+</span></button>
+      <div class="faq-a"><p>W centrum Jaros&#322;awia. Dok&#322;adny adres podamy przed otwarciem, razem z voucherem.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Czy to naprawd&#281; terapeutki z Tajlandii? <span class="pm">+</span></button>
+      <div class="faq-a"><p>Tak. Pracowa&#263; u nas b&#281;d&#261; certyfikowane terapeutki, kt&oacute;re szkoli&#322;y si&#281; w Tajlandii. To fundament tego miejsca, nie dodatek.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Czy zapis mnie do czego&#347; zobowi&#261;zuje? <span class="pm">+</span></button>
+      <div class="faq-a"><p>Nie. Zapis jest bezp&#322;atny i niezobowi&#261;zuj&#261;cy. Nie pobieramy &#380;adnych op&#322;at i nie rezerwujesz jeszcze konkretnego terminu. Zostawiasz numer, &#380;eby&#347;my mogli da&#263; zna&#263; o otwarciu i przekaza&#263; voucher.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BANER CTA (paralaksa, jak svahaspa) ================= -->
+<section class="cta-band">
+  <div class="cta-inner">
+    <h2>Tw&oacute;j rytua&#322; ju&#380; czeka</h2>
+    <p>Zostaw kontakt i odbierz voucher &minus;30% na pierwsz&#261; wizyt&#281; &mdash; dla pierwszych 100 os&oacute;b.</p>
+    <a href="#zapis" class="btn btn-light" data-track="click_cta_banner">Odbierz voucher &minus;30%</a>
+  </div>
+</section>
+
+<!-- ================= STOPKA ================= -->
+<footer>
+  <div class="wrap">
+    <div class="brand">Sabai</div>
+    <p>Masa&#380; tajski. Ju&#380; wkr&oacute;tce w Jaros&#322;awiu.</p>
+    <div class="foot-links">
+      <a href="#zapis">Zapisy</a>
+      <a href="mailto:kontakt@example.pl">kontakt@example.pl</a>
+      <a href="#" id="ppLink2">Polityka prywatno&#347;ci</a>
+    </div>
+    <p class="foot-note">
+      Salon jest w przygotowaniu, a termin otwarcia planowany.
+      Zapis jest bezp&#322;atny i nie stanowi rezerwacji ani zobowi&#261;zania &#380;adnej ze stron.
+      Voucher &minus;30% honorujemy po otwarciu salonu.
+    </p>
+  </div>
+</footer>
+
+<!-- ================= STICKY CTA ================= -->
+<div class="sticky" id="sticky">
+  <a href="#zapis" class="btn btn-primary btn-full" data-track="click_cta_sticky">Odbierz voucher &minus;30%</a>
+</div>
+
+<!-- ================= POLITYKA PRYWATNOSCI ================= -->
+<div class="modal" id="ppModal">
+  <div class="modal-box">
+    <button class="modal-close" id="ppClose">&times;</button>
+    <h3>Polityka prywatno&#347;ci</h3>
+    <p style="font-size:13px">Uzupe&#322;nij pola [ ] swoimi danymi przed publikacj&#261;.</p>
+    <h4>Administrator danych</h4>
+    <p>[NAZWA FIRMY], [ADRES], kontakt: [E-MAIL].</p>
+    <h4>Jakie dane zbieramy</h4>
+    <p>Imi&#281; i numer telefonu (opcjonalnie e-mail), podane dobrowolnie w formularzu zapisu.</p>
+    <h4>Cel i podstawa</h4>
+    <p>Dane przetwarzamy wy&#322;&#261;cznie w celu kontaktu w sprawie otwarcia salonu i przekazania vouchera &minus;30%. Podstaw&#261; jest Twoja zgoda (art. 6 ust. 1 lit. a RODO).</p>
+    <h4>Jak d&#322;ugo</h4>
+    <p>Do 12 miesi&#281;cy od zapisu lub do momentu wycofania zgody, w zale&#380;no&#347;ci od tego, co nast&#261;pi wcze&#347;niej. Je&#347;li salon nie powstanie, dane usuwamy.</p>
+    <h4>Twoje prawa</h4>
+    <p>Masz prawo dost&#281;pu do danych, ich sprostowania, usuni&#281;cia, ograniczenia przetwarzania oraz wycofania zgody w ka&#380;dej chwili. Wystarczy wiadomo&#347;&#263; na [E-MAIL]. Przys&#322;uguje Ci te&#380; skarga do Prezesa UODO.</p>
+    <h4>Odbiorcy</h4>
+    <p>Dane przechowujemy u dostawcy us&#322;ugi formularza oraz hostingu, dzia&#322;aj&#261;cych na terenie UE. Nie sprzedajemy ich i nie przekazujemy podmiotom trzecim w celach marketingowych.</p>
+    <h4>Pliki cookie i pomiar</h4>
+    <p>Strona korzysta z Piksela Meta (Facebook) w celu pomiaru skuteczno&#347;ci reklam. Mo&#380;esz zablokowa&#263; pliki cookie w ustawieniach przegl&#261;darki.</p>
+  </div>
+</div>
+
+
+<script>
+/* ============================================================
+   Zgłoszenia lecą teraz do Twojej bazy Supabase i pokazują się w admin.html.
+   Konfiguracja (URL + klucz) jest na GÓRZE pliku, w sekcji <head>.
+   Dopóki jej nie uzupełnisz, formularz działa w trybie DEMO:
+   pokazuje podziękowanie, ale NIC NIE ZAPISUJE.
+   ============================================================ */
+
+/* Bezpiecznik. Moduł analityki z sekcji <head> dociąga bibliotekę z internetu,
+   więc przez ułamek sekundy po otwarciu strony jeszcze go nie ma. Gdyby ktoś
+   kliknął w tym czasie, gołe wywołanie sabaiTrack() wywaliłoby błędem i zepsuło
+   formularz. Zasada jest prosta: analityka może nie zadziałać, formularz NIGDY. */
+const track = (name, fbEvent) =>
+  (typeof window.sabaiTrack === 'function') ? window.sabaiTrack(name, fbEvent) : null;
+
+const form = document.getElementById('leadForm');
+const thanks = document.getElementById('thanks');
+const formHead = document.getElementById('formHead');
+const errMsg = document.getElementById('errMsg');
+const btn = document.getElementById('submitBtn');
+const nameI = document.getElementById('name');
+const phoneI = document.getElementById('phone');
+const rodoI = document.getElementById('rodo');
+
+function fail(msg, el){
+  errMsg.textContent = msg;
+  errMsg.classList.add('show');
+  if (el){ el.classList.add('err'); el.focus(); }
+  return false;
+}
+function clearErr(){
+  errMsg.classList.remove('show');
+  [nameI, phoneI].forEach(e => e.classList.remove('err'));
+}
+[nameI, phoneI].forEach(e => e.addEventListener('input', clearErr));
+rodoI.addEventListener('change', clearErr);
+
+/* Formatowanie numeru w locie: tylko cyfry, maksymalnie 9, spacja co 3.
+   Efekt: użytkownik widzi "600 100 200" i nie da się wpisać więcej cyfr. */
+phoneI.addEventListener('input', () => {
+  const digits = phoneI.value.replace(/\D/g, '').slice(0, 9);
+  phoneI.value = digits.replace(/(\d{3})(?=\d)/g, '$1 ');
+});
+
+// Polski numer: dokładnie 9 cyfr
+function validPhone(v){
+  return /^\d{9}$/.test(v.replace(/\D/g, ''));
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearErr();
+
+  if (nameI.value.trim().length < 2) { track('form_error'); return fail('Podaj swoje imię.', nameI); }
+  if (!validPhone(phoneI.value))     { track('form_error'); return fail('Podaj poprawny numer telefonu (9 cyfr).', phoneI); }
+  if (!rodoI.checked)                { track('form_error'); return fail('Zaznacz zgodę, żebyśmy mogli się z Tobą skontaktować.'); }
+
+  btn.disabled = true;
+  btn.textContent = 'Wysyłanie...';
+
+  const data = {
+    imie: nameI.value.trim(),
+    telefon: phoneI.value.trim(),
+    email: document.getElementById('email').value.trim() || null,
+    zgoda_rodo: true
+  };
+
+  try {
+    await sabaiSaveLead(data);
+
+    /* Kolejność jest celowa: najpierw zapis do bazy, potem zdarzenie.
+       Gdyby zapis padł, lecimy do catch i NIE mówimy człowiekowi "jesteś na
+       liście" — bo nie jest. Zgłoszenie liczone jako Lead ma odpowiadać
+       zgłoszeniu, które faktycznie leży w bazie. */
+    track('lead', 'Lead');   // do Twojej bazy + do Piksela Meta
+
+    form.style.display = 'none';
+    formHead.style.display = 'none';
+    thanks.classList.add('show');
+    thanks.scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById('sticky').classList.remove('show');
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Odbierz voucher −30%';
+    fail('Coś poszło nie tak. Spróbuj ponownie za chwilę.');
+  }
+});
+
+// FAQ — mierzymy tylko ROZWINIĘCIE, nie zwinięcie
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const opened = q.parentElement.classList.toggle('open');
+    if (opened) track('faq_open');
+  });
+});
+
+/* "Zaczął wypełniać formularz" — odpala się RAZ, przy pierwszym kliknięciu w
+   pole. Zestawione z liczbą zapisów mówi Ci, ilu ludzi zaczęło i się rozmyśliło.
+   Jeśli ta różnica będzie duża, problem jest w formularzu, nie w reklamie. */
+let started = false;
+form.addEventListener('focusin', () => {
+  if (!started) { started = true; track('form_start'); }
+}, { once:false });
+
+// Sticky CTA — pokazuje się po opuszczeniu hero, znika przy formularzu
+const sticky = document.getElementById('sticky');
+const heroEl = document.querySelector('.hero');
+const formEl = document.getElementById('zapis');
+const io = new IntersectionObserver(() => {
+  const heroGone = heroEl.getBoundingClientRect().bottom < 0;
+  const formVisible = formEl.getBoundingClientRect().top < window.innerHeight * 0.9
+                   && formEl.getBoundingClientRect().bottom > 0;
+  sticky.classList.toggle('show', heroGone && !formVisible && !thanks.classList.contains('show'));
+}, {threshold:[0,.1,.5,1]});
+io.observe(heroEl); io.observe(formEl);
+window.addEventListener('scroll', () => {
+  const heroGone = heroEl.getBoundingClientRect().bottom < 0;
+  const fr = formEl.getBoundingClientRect();
+  const formVisible = fr.top < window.innerHeight * 0.9 && fr.bottom > 0;
+  sticky.classList.toggle('show', heroGone && !formVisible && !thanks.classList.contains('show'));
+}, {passive:true});
+
+// Modal polityki prywatności
+const modal = document.getElementById('ppModal');
+const openPP = e => {
+  e.preventDefault();
+  modal.classList.add('show');
+  document.body.style.overflow='hidden';
+  track('privacy_open');
+};
+document.getElementById('ppLink').addEventListener('click', openPP);
+document.getElementById('ppLink2').addEventListener('click', openPP);
+const closePP = () => { modal.classList.remove('show'); document.body.style.overflow=''; };
+document.getElementById('ppClose').addEventListener('click', closePP);
+modal.addEventListener('click', e => { if (e.target === modal) closePP(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePP(); });
+
+/* Licznik "Już X osób czeka na otwarcie".
+   Liczba jest PRAWDZIWA — prosto z bazy, funkcja public_lead_count().
+   Pokazuje się dopiero od 30 zapisów: "Już 3 osoby czekają" działa przeciwko
+   Tobie. Poniżej progu po prostu go nie ma i to jest uczciwe rozwiązanie —
+   nic nie twierdzisz, zamiast twierdzić nieprawdę. */
+const MIN_DO_POKAZANIA = 30;
+window.addEventListener('load', async () => {
+  if (!window.SABAI_ON || typeof sabaiLeadCount !== 'function') return;
+  const n = await sabaiLeadCount();
+  if (n >= MIN_DO_POKAZANIA) {
+    document.getElementById('counterN').textContent = n;
+    document.getElementById('counter').style.display = 'block';
+  }
+});
+
+/* ============================================================
+   Odsłanianie sekcji przy przewijaniu.
+   Elementy pojawiają się miękko dopiero, gdy wjeżdżają na ekran.
+   Szanujemy ustawienie "ogranicz animacje" — wtedy nic nie ukrywamy.
+   ============================================================ */
+(function(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const reg = [];
+  const mark = (el, delay) => {
+    el.classList.add('reveal');
+    if (delay) el.style.transitionDelay = delay + 'ms';
+    reg.push(el);
+  };
+
+  // Nagłówki sekcji
+  document.querySelectorAll('.sec-head').forEach(el => mark(el, 0));
+  // Kafelki "Dlaczego my" — kaskadowo w obrębie siatki
+  document.querySelectorAll('.grid').forEach(g =>
+    g.querySelectorAll('.card').forEach((c, i) => mark(c, i * 90)));
+  // Zdjęcia nastroju
+  document.querySelectorAll('.mood .ph').forEach((p, i) => mark(p, i * 90));
+  // Karta oferty i karta formularza
+  document.querySelectorAll('.offer-box, .form-card').forEach(el => mark(el, 0));
+  // Korzyści z listy — kaskadowo
+  document.querySelectorAll('.perks li').forEach((l, i) => mark(l, i * 80));
+  // Pytania FAQ
+  document.querySelectorAll('.faq-item').forEach((f, i) => mark(f, i * 50));
+
+  // Po animacji sprzątamy klasy, żeby nie spowalniały późniejszych efektów hover
+  const clean = el => { el.classList.remove('reveal', 'is-visible'); el.style.transitionDelay = ''; };
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      el.classList.add('is-visible');
+      el.addEventListener('transitionend', () => clean(el), { once:true });
+      io.unobserve(el);
+    });
+  }, { threshold:.1, rootMargin:'0px 0px -5% 0px' });
+
+  reg.forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
