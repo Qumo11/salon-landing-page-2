@@ -293,6 +293,16 @@ footer a:hover{text-decoration:underline}
   .leaves-bg{animation:driftSlow 90s linear infinite}
 }
 @keyframes driftSlow{from{background-position:0 0}to{background-position:-220px 220px}}
+
+/* Wejscie hero: tresc "wystrzeliwuje" z mini do normalnego rozmiaru */
+@media (prefers-reduced-motion: no-preference){
+  .js .hero-frame{animation:heroPop .8s cubic-bezier(.34,1.56,.64,1) both}
+}
+@keyframes heroPop{
+  0%{opacity:0;transform:scale(.35)}
+  55%{opacity:1}
+  100%{opacity:1;transform:scale(1)}
+}
 </style>
 </head>
 <body>
