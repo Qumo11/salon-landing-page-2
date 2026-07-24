@@ -161,7 +161,7 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
 /* Rozmyte zdjecie w tle (jak na svahaspa) — na osobnej warstwie, zeby tekst
    i przyciski zostaly ostre. Powiekszenie scale(1.12) ukrywa jasne krawedzie
    powstajace przy rozmyciu. */
-.hero::before{content:'';position:absolute;inset:0;z-index:0;background:url('img/slide3.jpg') center/cover no-repeat;filter:blur(7px);transform:scale(1.12)}
+.hero::before{content:'';position:absolute;inset:0;z-index:0;background:url('img/slide3.jpg') center/cover no-repeat;filter:blur(4px);transform:scale(1.06)}
 /* Ciemna nakladka na zdjecie — dla czytelnosci bialego tekstu */
 .hero::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(rgba(26,21,16,.5),rgba(26,21,16,.62))}
 .hero-frame{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:56px 48px;border:1px solid rgba(246,240,231,.28);background:rgba(24,19,14,.42);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
