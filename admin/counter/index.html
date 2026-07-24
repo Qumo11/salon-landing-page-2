@@ -496,7 +496,13 @@ function renderLeads(){
 /* ---------- CSV ---------- */
 $('csvBtn').addEventListener('click', () => {
   if (!leads.length) return alert('Nie ma jeszcze czego eksportować.');
-  const cell = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  const cell = v => {
+    let s = String(v ?? '');
+    /* Zabezpieczenie przed "formula injection": pole zaczynajace sie od = + - @
+       moze byc potraktowane przez Excel jako formula. Poprzedzamy je apostrofem. */
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return `"${s.replace(/"/g,'""')}"`;
+  };
   const csv = '﻿' + [
     ['Imie','Telefon','Email','Zgoda RODO','Data zapisu','Zrodlo','Kampania'].join(';'),
     ...leads.map(l => [
