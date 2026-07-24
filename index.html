@@ -272,12 +272,51 @@ footer a:hover{text-decoration:underline}
   .reveal.is-visible{opacity:1;transform:none}
 }
 @media(max-width:720px){section{padding:72px 0}.card{padding:36px 26px}.offer-box,.form-card{padding:34px 24px}}
+
+/* ============================================================
+   BOTANICZNY WZÓR — te same listki co na sabai-landing-www.
+   Wzór na całej stronie (leaves-bg) + duże gałązki po bokach
+   w hero i stopce. Kolory dopasowane do kremowo-złotej wersji.
+   ============================================================ */
+.leaves-bg{
+  position:fixed;inset:0;z-index:5;pointer-events:none;
+  opacity:.12;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%232C221C' stroke-width='1'%3E%3Cpath d='M110 26c-16 24-16 47 0 71 16-24 16-47 0-71z'/%3E%3Cpath d='M110 97v96'/%3E%3Cpath d='M110 127c-20-5-35-20-40-40 20 5 35 20 40 40z'/%3E%3Cpath d='M110 127c20-5 35-20 40-40-20 5-35 20-40 40z'/%3E%3Cpath d='M110 170c-16-4-28-16-32-32 16 4 28 16 32 32z'/%3E%3Cpath d='M110 170c16-4 28-16 32-32-16 4-28 16-32 32z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:220px 220px;
+}
+/* Karty i boksy zawsze NAD wzorem, żeby nie przeświecał przez ich tło */
+.card,.offer-box,.form-card,.modal-box,.ph,footer{position:relative;z-index:6}
+.hero,.form-sec{position:relative;z-index:6}
+
+/* Duże, subtelne gałązki po bokach — hero i stopka */
+.hero{overflow:hidden}
+.hero-leaf,.foot-leaf{
+  position:absolute;width:270px;opacity:.13;z-index:1;pointer-events:none;
+  background-repeat:no-repeat;background-position:center;background-size:contain;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='700' viewBox='0 0 200 700'%3E%3Cg fill='none' stroke='%23D8C4A6' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M100 30 V670'/%3E%3Cpath d='M100 90 C88 70 88 48 100 30 C112 48 112 70 100 90Z'/%3E%3Cpath d='M100 180 C74 168 52 146 48 116 C74 128 96 150 100 180Z'/%3E%3Cpath d='M100 180 C126 168 148 146 152 116 C126 128 104 150 100 180Z'/%3E%3Cpath d='M100 320 C74 308 52 286 48 256 C74 268 96 290 100 320Z'/%3E%3Cpath d='M100 320 C126 308 148 286 152 256 C126 268 104 290 100 320Z'/%3E%3Cpath d='M100 460 C74 448 52 426 48 396 C74 408 96 430 100 460Z'/%3E%3Cpath d='M100 460 C126 448 148 426 152 396 C126 408 104 430 100 460Z'/%3E%3Cpath d='M100 600 C74 588 52 566 48 536 C74 548 96 570 100 600Z'/%3E%3Cpath d='M100 600 C126 588 148 566 152 536 C126 548 104 570 100 600Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-leaf{top:50%;height:90%;transform:translateY(-50%)}
+.hero-leaf.l{left:-72px}
+.hero-leaf.r{right:-72px;transform:translateY(-50%) scaleX(-1)}
+.foot-leaf{bottom:-40px;height:700px;transform:scaleY(-1)}
+.foot-leaf.l{left:-72px}
+.foot-leaf.r{right:-72px;transform:scaleY(-1) scaleX(-1)}
+@media(max-width:720px){.hero-leaf,.foot-leaf{width:150px;opacity:.1}.hero-leaf.l,.foot-leaf.l{left:-58px}.hero-leaf.r,.foot-leaf.r{right:-58px}}
+@media (prefers-reduced-motion: no-preference){
+  .leaves-bg{animation:driftSlow 90s linear infinite}
+}
+@keyframes driftSlow{from{background-position:0 0}to{background-position:-220px 220px}}
 </style>
 </head>
 <body>
 
+<!-- Botaniczny wzór widoczny na całej stronie -->
+<div class="leaves-bg" aria-hidden="true"></div>
+
 <!-- ================= HERO ================= -->
 <header class="hero">
+  <div class="hero-leaf l" aria-hidden="true"></div>
+  <div class="hero-leaf r" aria-hidden="true"></div>
   <div class="hero-badge" aria-hidden="true"><b>&minus;30%</b><span>VOUCHER</span></div>
   <div class="hero-frame">
     <span class="eyebrow">Wkr&oacute;tce w Jaros&#322;awiu</span>
@@ -485,6 +524,8 @@ footer a:hover{text-decoration:underline}
 
 <!-- ================= STOPKA ================= -->
 <footer>
+  <div class="foot-leaf l" aria-hidden="true"></div>
+  <div class="foot-leaf r" aria-hidden="true"></div>
   <div class="wrap">
     <div class="brand">Sabai</div>
     <p>Masa&#380; tajski. Ju&#380; wkr&oacute;tce w Jaros&#322;awiu.</p>
