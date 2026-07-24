@@ -181,11 +181,17 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
 .hero-badge{position:absolute;z-index:3;top:34px;right:34px;width:102px;height:102px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#E0C093,#B0824F 88%);color:#2C221C;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(6deg);box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.4)}
 .hero-badge b{font-family:'Lustria',serif;font-size:27px;color:#2C221C;line-height:1}
 .hero-badge span{font-size:8.5px;letter-spacing:.24em;margin-top:5px}
-/* Odznaka jest klikalna (przenosi do formularza) i co pare sekund "tetni" */
-.hero-badge{cursor:pointer;text-decoration:none;transition:box-shadow .2s ease}
-.hero-badge:hover{box-shadow:0 16px 42px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.55)}
+/* Odznaka: klikalna, powieksza sie po najechaniu, co pare sekund "tetni",
+   a przez jej powierzchnie przesuwa sie promien swiatla (jak na zdjeciach). */
+.hero-badge{cursor:pointer;text-decoration:none;overflow:hidden;transition:transform .25s ease,box-shadow .2s ease}
+.hero-badge:hover{animation:none;transform:rotate(6deg) scale(1.14);box-shadow:0 18px 46px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.6)}
+/* Promien swiatla przesuwajacy sie po odznace */
+.hero-badge::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:50%;
+  background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%);
+  background-size:250% 100%;background-position:180% 0}
 @media (prefers-reduced-motion: no-preference){
   .hero-badge{animation:badgePulse 4.5s ease-in-out 2s infinite}
+  .hero-badge::after{animation:badgeSheen 4.5s ease-in-out 1s infinite}
 }
 @keyframes badgePulse{
   0%,70%,100%{transform:rotate(6deg) scale(1)}
@@ -193,6 +199,10 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
   82%{transform:rotate(6deg) scale(.96)}
   88%{transform:rotate(6deg) scale(1.07)}
   94%{transform:rotate(6deg) scale(1)}
+}
+@keyframes badgeSheen{
+  0%{background-position:180% 0}
+  35%,100%{background-position:-80% 0}
 }
 .counter{margin-top:22px;font-size:14px;color:rgba(246,240,231,.8)}
 .counter strong{font-family:'Lustria',serif;font-size:19px;color:var(--gold-soft)}
