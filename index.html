@@ -162,8 +162,10 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
    i przyciski zostaly ostre. Powiekszenie scale(1.12) ukrywa jasne krawedzie
    powstajace przy rozmyciu. */
 .hero::before{content:'';position:absolute;inset:0;z-index:0;background:url('img/slide3.jpg') center/cover no-repeat;filter:blur(4px);transform:scale(1.06)}
-/* Ciemna nakladka na zdjecie — dla czytelnosci bialego tekstu */
-.hero::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(rgba(26,21,16,.5),rgba(26,21,16,.62))}
+/* Nakladka na zdjecie — kierunkowa (ciemniej u dolu, jasniej u gory), jak na
+   svahaspa. Lzejsza niz wczesniej, wiec zdjecie jest widoczne, a tekst zostaje
+   czytelny dzieki wlasnemu tlu ramki hero. */
+.hero::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(44,34,28,.72),rgba(44,34,28,.28))}
 .hero-frame{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:56px 48px;border:1px solid rgba(246,240,231,.28);background:rgba(24,19,14,.42);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .hero-frame::before,.hero-frame::after{content:'';position:absolute;width:18px;height:18px;border:1px solid var(--gold-soft)}
 .hero-frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
