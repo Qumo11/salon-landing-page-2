@@ -826,20 +826,29 @@ window.addEventListener('load', async () => {
 })();
 </script>
 <!-- ===== ZART / PRANK (TYMCZASOWE — do usuniecia) =====
-     Aktywne WYLACZNIE gdy adres ma ?prank (np. .../index.html?prank).
+     Aktywne WYLACZNIE gdy adres ma ?promo (np. .../?promo).
      Bez tego strona dziala normalnie dla wszystkich. ===== -->
 <script>
 (function(){
-  if (!new URLSearchParams(location.search).has('prank')) return;
+  if (!new URLSearchParams(location.search).has('promo')) return;
   var sel = 'a, button, input, textarea, select, label, .hero-badge, .faq-q, [role=button]';
   document.querySelectorAll(sel).forEach(function(el){
+    var tx = 0, ty = 0;                 // aktualne przesuniecie elementu
     el.style.transition = 'transform .12s ease';
     function flee(e){
-      if (e) e.preventDefault();       // blokuje klikniecie/wpisanie
-      el.style.animation = 'none';     // wylacza wlasne animacje (np. odznaki)
-      var dx = (Math.random()<0.5?-1:1)*(70 + Math.random()*190);
-      var dy = (Math.random()<0.5?-1:1)*(60 + Math.random()*150);
-      el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      if (e) e.preventDefault();        // blokuje klikniecie/wpisanie
+      el.style.animation = 'none';      // wylacza wlasne animacje (np. odznaki)
+      var r = el.getBoundingClientRect();
+      var baseL = r.left - tx, baseT = r.top - ty;   // pozycja bez przesuniecia
+      var m = 6;                                       // margines od krawedzi
+      var newL = baseL + (Math.random()<0.5?-1:1)*(70 + Math.random()*190);
+      var newT = baseT + (Math.random()<0.5?-1:1)*(60 + Math.random()*150);
+      // docisniecie, zeby element ZOSTAL w widocznym obszarze strony
+      newL = Math.max(m, Math.min(window.innerWidth  - r.width  - m, newL));
+      newT = Math.max(m, Math.min(window.innerHeight - r.height - m, newT));
+      tx = newL - baseL;
+      ty = newT - baseT;
+      el.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
     }
     el.addEventListener('mouseenter', flee);
     el.addEventListener('mousemove', flee);
