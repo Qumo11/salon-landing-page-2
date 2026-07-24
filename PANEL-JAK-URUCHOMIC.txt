@@ -1,0 +1,112 @@
+========================================================================
+  PANEL SABAI — JAK URUCHOMIC LICZNIKI (wejscia + zapisy)
+========================================================================
+
+Panel (admin.html) jest juz gotowy: logowanie + liczniki + lista zapisow.
+Zeby zaczal pokazywac PRAWDZIWE liczby, trzeba go raz podlaczyc do darmowej
+bazy Supabase. Zajmuje to ~5-10 minut. Robisz to TYLKO RAZ.
+
+Potrzebne beda 2 wartosci z Supabase (ADRES i KLUCZ) — zdobedziesz je nizej.
+
+
+------------------------------------------------------------------------
+KROK 1.  Zaloz darmowe konto i projekt
+------------------------------------------------------------------------
+1. Wejdz na  https://supabase.com  ->  "Start your project"  (mozna przez
+   konto Google/GitHub).
+2. Kliknij "New project".
+   - Name:      dowolna, np. "sabai"
+   - Database Password: wymysl i ZAPISZ (do logowania sie nie przyda,
+     ale Supabase go wymaga).
+   - Region:    Europe (np. Frankfurt / eu-central).
+3. Poczekaj ~1-2 min, az projekt sie zbuduje.
+
+
+------------------------------------------------------------------------
+KROK 2.  Utworz tabele i reguly (plik supabase-setup.sql)
+------------------------------------------------------------------------
+1. W Supabase (menu z lewej) otworz:  SQL Editor  ->  "New query".
+2. Otworz plik  supabase-setup.sql  (jest w tym samym folderze co strona),
+   skopiuj CALA jego zawartosc i wklej do okna SQL.
+3. WAZNE: w punkcie 2 tego SQL podmien  'twoj@email.pl'  na SWOJ e-mail
+   (malymi literami) — tym e-mailem bedziesz logowac sie do panelu.
+4. Kliknij "Run" (albo Ctrl+Enter). Powinno pojawic sie "Success".
+
+
+------------------------------------------------------------------------
+KROK 3.  Skopiuj ADRES i KLUCZ projektu
+------------------------------------------------------------------------
+1. W Supabase otworz:  Project Settings (ikona zebatki) ->  "API".
+2. Przepisz sobie dwie rzeczy:
+   - Project URL          (np. https://abcdefgh.supabase.co)
+   - anon public key       (dlugi ciag zaczynajacy sie od "eyJ...")
+   (Klucz "anon" JEST publiczny i to jest OK — danych pilnuja reguly z KROKU 2.
+    NIGDY nie uzywaj klucza "service_role".)
+
+
+------------------------------------------------------------------------
+KROK 4.  Wklej te 2 wartosci do plikow strony
+------------------------------------------------------------------------
+Wklejasz w DWA miejsca (te same 2 wartosci):
+
+A) admin.html  — na DOLE pliku, sekcja "KONFIGURACJA":
+      const SUPABASE_URL      = 'TUTAJ_WKLEJ_URL';
+      const SUPABASE_ANON_KEY = 'TUTAJ_WKLEJ_ANON_KEY';
+   Podmien napisy w apostrofach na swoj URL i klucz.
+
+B) index.html  — na GORZE pliku (sekcja <head>, komentarz "SUPABASE"):
+      const SUPABASE_URL      = 'TUTAJ_WKLEJ_URL';
+      const SUPABASE_ANON_KEY = 'TUTAJ_WKLEJ_ANON_KEY';
+   To samo. To JEDYNA zmiana w index.html — wyglad i dzialanie strony
+   dla odwiedzajacych NIE zmienia sie ani troche. Bez tego panel nie ma
+   skad brac liczby "wejscia" i "zapisy".
+
+(Jesli wolisz, przeslij mi te 2 wartosci, a ja wkleje je i wypchne na GitHub.)
+
+
+------------------------------------------------------------------------
+KROK 5.  Pozwol na logowanie linkiem (magic link)
+------------------------------------------------------------------------
+1. W Supabase:  Authentication  ->  "URL Configuration".
+2. Site URL wpisz:
+      https://qumo11.github.io/salon-landing-page-2/admin.html
+3. W "Redirect URLs" dodaj (Add URL):
+      https://qumo11.github.io/salon-landing-page-2/**
+   (dwie gwiazdki na koncu). Zapisz (Save).
+   To sprawia, ze link z e-maila wroci na Twoj panel.
+   (E-mail logowania jest domyslnie wlaczony — nic wiecej nie trzeba.)
+
+
+------------------------------------------------------------------------
+KROK 6.  Wgraj zmienione pliki i zaloguj sie
+------------------------------------------------------------------------
+1. Wyslij zmienione admin.html oraz index.html na GitHub (albo daj mi znac
+   — wypchne za Ciebie).
+2. Wejdz na:  https://qumo11.github.io/salon-landing-page-2/admin.html
+3. Wpisz swoj e-mail  ->  "Wyslij link do logowania".
+4. Otworz e-mail NA TYM SAMYM urzadzeniu, kliknij link  ->  jestes w panelu.
+5. Liczniki zaczna rosnac od momentu, gdy ktos wejdzie na strona/zapisze sie.
+
+
+------------------------------------------------------------------------
+CO ZOBACZYSZ W PANELU
+------------------------------------------------------------------------
+- Zapisy na liste        (ile osob zostawilo kontakt)
+- Wejscia na strone      (ile razy otwarto strone)
+- Unikalne osoby         (ile roznych osob)
+- Konwersja %            (ile z odwiedzajacych sie zapisalo)
+- Wykres ruchu dziennego i klikniec w przyciski
+- Liste zapisanych z telefonem + eksport do Excela (CSV)
+
+Filtry u gory (Dzis / 7 dni / 30 dni / Wszystko) przelaczaja okres.
+
+
+------------------------------------------------------------------------
+BEZPIECZENSTWO — warto wiedziec
+------------------------------------------------------------------------
+- Kod strony jest publiczny (repo public), ale to NIE jest dziura: do panelu
+  wejdzie tylko osoba, ktora ma dostep do Twojej skrzynki e-mail (magic link),
+  a dane w bazie chronia reguly RLS z KROKU 2 (czyta je tylko Twoj e-mail).
+- Klucz "anon" moze byc jawny. Klucz "service_role" — NIGDY nie wklejaj go
+  nigdzie w plikach strony.
+========================================================================
