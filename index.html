@@ -20,6 +20,13 @@ if (location.hash) history.replaceState(null, '', location.pathname + location.s
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pl_PL">
 
+<!-- Ikona w karcie przegladarki. SVG bierze kazda nowa przegladarka (jest ostry
+     w kazdym rozmiarze), .ico zostaje dla starszych i dla skrotu na pulpicie,
+     apple-touch-icon dla iPhone'a po dodaniu strony do ekranu glownego. -->
+<link rel="icon" href="img/favicon.ico" sizes="32x32">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+
 <link rel="preload" as="image" href="img/slide3.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
