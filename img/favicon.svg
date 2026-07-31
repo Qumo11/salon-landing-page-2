@@ -1,7 +1,7 @@
 ﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sabai">
 <title>Sabai - pelna rozeta</title>
-<circle cx="32" cy="32" r="32" fill="#2C221C"/>
-<g transform="translate(32 32) scale(0.30) translate(-100 -100)" fill="none" stroke="#C9A87C" stroke-linejoin="round">
+<rect width="64" height="64" rx="14" fill="#2C221C"/>
+<g transform="translate(32 32) scale(0.295) translate(-100 -100)" fill="none" stroke="#C9A87C" stroke-linejoin="round">
 <path d='M190 100A21.77 21.77 0 0 1 183.15 134.44A21.77 21.77 0 0 1 163.64 163.64A21.77 21.77 0 0 1 134.44 183.15A21.77 21.77 0 0 1 100 190A21.77 21.77 0 0 1 65.56 183.15A21.77 21.77 0 0 1 36.36 163.64A21.77 21.77 0 0 1 16.85 134.44A21.77 21.77 0 0 1 10 100A21.77 21.77 0 0 1 16.85 65.56A21.77 21.77 0 0 1 36.36 36.36A21.77 21.77 0 0 1 65.56 16.85A21.77 21.77 0 0 1 100 10A21.77 21.77 0 0 1 134.44 16.85A21.77 21.77 0 0 1 163.64 36.36A21.77 21.77 0 0 1 183.15 65.56A21.77 21.77 0 0 1 190 100 Z' stroke-width='2.6' opacity='.5'/>
 <circle cx='100' cy='100' r='74' stroke-width='2.6' opacity='.4'/>
 <g stroke-width='2.6' opacity='.55'><rect x='47.6' y='47.6' width='104.8' height='104.8' transform='rotate(45 100 100)'/></g>
