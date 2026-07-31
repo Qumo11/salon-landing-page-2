@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sabai">
-  <title>Sabai</title>
-  <!-- Ikonka w karcie przegladarki. Male rozmiary (16px), wiec swiadomie
-       BEZ cienkich listkow — zostaje czytelna litera na ciemnym tle. -->
-  <rect width="64" height="64" rx="14" fill="#2C221C"/>
-  <circle cx="32" cy="32" r="25" fill="none" stroke="#D8C4A6" stroke-width="1.4" opacity=".45"/>
-  <text x="32" y="45" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="38" fill="#D8C4A6">S</text>
-</svg>
