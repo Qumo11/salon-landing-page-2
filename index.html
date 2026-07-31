@@ -216,8 +216,8 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
 .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
 .card .ico{width:50px;height:50px;margin:6px auto 22px;color:var(--gold-dark)}
 .card .ico svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.2}
-.card h3{font-size:22px;margin-bottom:12px;color:var(--ink)}
-.card p{font-size:15px;color:var(--muted);line-height:1.7}
+.card h3{font-size:22px;margin-bottom:12px;color:var(--ink);text-wrap:balance}
+.card p{font-size:15px;color:var(--muted);line-height:1.7;text-wrap:pretty;hyphens:none}
 .mood{background:var(--cream-2)}
 .mood-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;height:440px}
 .mood-col{display:grid;gap:16px}
@@ -408,61 +408,14 @@ footer a:hover{text-decoration:underline}
   </div>
 </section>
 
-<!-- ================= NASTROJ / ZDJECIA ================= -->
-<section class="mood">
-  <div class="wrap">
-    <div class="mood-grid">
-      <div class="ph has-photo" style="background-image:url('img/mood1.jpg')"><span>Olejki, ciep&#322;o, cisza</span></div>
-      <div class="mood-col">
-        <div class="ph has-photo" style="background-image:url('img/mood2.jpg')"><span>Rytua&#322;</span></div>
-        <div class="ph has-photo" style="background-image:url('img/mood3.jpg')"><span>Dotyk, kt&oacute;ry koi</span></div>
-      </div>
-    </div>
-    <p class="ph-note">Zdj&#281;cia pogl&#261;dowe. Salon jest w przygotowaniu.</p>
-  </div>
-</section>
-
-<!-- ================= OFERTA ================= -->
-<section class="offer">
-  <div class="wrap narrow">
-    <div class="sec-head">
-      <span class="eyebrow">Dla pierwszych go&#347;ci</span>
-      <h2>B&#261;d&#378; w&#347;r&oacute;d pierwszych</h2>
-      <p>Zostaw kontakt, a odezwiemy si&#281;, gdy tylko b&#281;dziemy gotowi otworzy&#263; drzwi.</p>
-      <div class="rule"></div>
-    </div>
-    <div class="offer-box">
-      <ul class="perks">
-        <li>
-          <span class="num">1</span>
-          <span><strong>Voucher &minus;30% na pierwsz&#261; wizyt&#281;</strong>
-          <span class="d">Wyj&#261;tkowa cena, kt&oacute;ra po otwarciu ju&#380; nie wr&oacute;ci.</span></span>
-        </li>
-        <li>
-          <span class="num">2</span>
-          <span><strong>Pierwsze&#324;stwo rezerwacji</strong>
-          <span class="d">Wybierasz termin, zanim rusz&#261; zapisy dla wszystkich.</span></span>
-        </li>
-        <li>
-          <span class="num">3</span>
-          <span><strong>Wiadomo&#347;&#263; o otwarciu</strong>
-          <span class="d">Damy Ci zna&#263;, gdy otworzymy drzwi. Jeden SMS, bez spamu.</span></span>
-        </li>
-      </ul>
-      <p style="text-align:center;margin-top:38px">
-        <a href="#zapis" class="btn btn-primary" data-track="click_cta_offer">Zapisz si&#281;</a>
-      </p>
-    </div>
-  </div>
-</section>
-
 <!-- ================= FORMULARZ ================= -->
 <section class="form-sec" id="zapis">
   <div class="wrap narrow">
     <div class="sec-head" id="formHead">
-      <span class="eyebrow">Zostaw kontakt</span>
-      <h2>Zostaw imi&#281; i telefon</h2>
-      <p>Wy&#347;lemy Ci voucher &minus;30% SMS-em, zanim jeszcze otworzymy drzwi.</p>
+      <span class="eyebrow">Sabai</span>
+      <h2>Pozosta&#324;my w kontakcie</h2>
+      <p>Zostaw kontakt, a jako jeden z pierwszych otrzymasz voucher &minus;30% na pierwsz&#261; wizyt&#281;
+         oraz informacj&#281; o otwarciu salonu.</p>
       <div class="rule"></div>
     </div>
 
@@ -530,10 +483,6 @@ footer a:hover{text-decoration:underline}
     <div class="faq-item">
       <button class="faq-q">Kiedy otwarcie? <span class="pm">+</span></button>
       <div class="faq-a"><p>Planujemy jesie&#324; 2026. Dok&#322;adnej daty jeszcze nie og&#322;aszamy. Osoby, kt&oacute;re zostawi&#261; nam kontakt, dowiedz&#261; si&#281; SMS-em jako pierwsze.</p></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q">Czy w Jaros&#322;awiu nie ma ju&#380; masa&#380;u tajskiego? <span class="pm">+</span></button>
-      <div class="faq-a"><p>Jest i dobrze, bo to znaczy, &#380;e jest na niego popyt. Nie udajemy pierwszych. Chcemy da&#263; Ci wyb&oacute;r, prawdziwe tajskie terapeutki i miejsce, z kt&oacute;rego nie chce si&#281; wychodzi&#263;.</p></div>
     </div>
     <div class="faq-item">
       <button class="faq-q">Ile b&#281;dzie kosztowa&#322; masa&#380;? <span class="pm">+</span></button>
@@ -825,6 +774,35 @@ window.addEventListener('load', async () => {
   reg.forEach(el => io.observe(el));
 })();
 </script>
+<script>
+/* ============================================================
+   POLSKA TYPOGRAFIA — sieroty na koncu linii.
+   Krotkie slowa ("i", "w", "a", "z", "o", "u", "to"...) nie moga zostawac
+   na koncu wiersza. Doklejamy je do nastepnego slowa twarda spacja (nbsp),
+   dzieki czemu tekst lamie sie w naturalniejszych miejscach.
+   ============================================================ */
+(function(){
+  var sel = '.card h3, .card p, .sec-head p, .sec-head h2, .hero-sub, .hero-tag,'
+          + '.faq-q, .faq-a p, .cta-band p, .thanks p, .micro, .foot-note, footer p';
+  /* wszystkie slowa 1-2 literowe (i, w, a, z, to, tu, je, do, na...) + "się" */
+  var re = /(\s|^)([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{1,2}|się)\s+/g;
+
+  document.querySelectorAll(sel).forEach(function(el){
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n;
+    while ((n = walker.nextNode())) nodes.push(n);
+
+    nodes.forEach(function(node){
+      var t = node.nodeValue;
+      /* dwa przebiegi — lapie tez dwa krotkie slowa obok siebie ("o i w") */
+      t = t.replace(re, '$1$2 ');
+      t = t.replace(re, '$1$2 ');
+      if (t !== node.nodeValue) node.nodeValue = t;
+    });
+  });
+})();
+</script>
+
 <!-- ===== ZART / PRANK (TYMCZASOWE — do usuniecia) =====
      Aktywne WYLACZNIE gdy adres ma ?promo (np. .../?promo).
      Bez tego strona dziala normalnie dla wszystkich. ===== -->
