@@ -20,6 +20,7 @@ if (location.hash) history.replaceState(null, '', location.pathname + location.s
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pl_PL">
 
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="preload" as="image" href="img/slide3.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -170,6 +171,13 @@ h2{font-size:clamp(32px,5.4vw,46px);color:var(--ink);margin:0 0 18px;text-wrap:b
 .hero .eyebrow{color:var(--gold-soft)}
 .hero .eyebrow::before,.hero .eyebrow::after{background:var(--gold-soft)}
 .hero .brand{font-family:'Lustria',serif;font-size:clamp(14px,3vw,17px);letter-spacing:.5em;text-transform:uppercase;color:var(--gold-soft);display:block;margin:24px 0 20px;text-indent:.5em}
+/* ===== LOGO (znak graficzny) =====
+   Rysowane w SVG, wiec jest ostre na kazdym ekranie i wazy tyle co nic.
+   Kolor bierze z CSS (currentColor), dlatego ten sam znak dziala
+   na ciemnym hero i w stopce — wystarczy zmienic 'color'. */
+.logo-mark{display:block;height:auto;color:var(--gold-soft)}
+.hero .logo-mark{width:clamp(62px,11vw,84px);margin:22px auto 0}
+.hero .logo-mark + .brand{margin-top:12px}
 .hero h1{font-size:clamp(38px,7.6vw,70px);color:#fff;line-height:1.06;margin-bottom:16px}
 .hero h1 em{display:block;font-style:italic;color:var(--gold-soft);font-size:.56em;margin-top:.18em}
 .hero-tag{font-family:'Lustria',serif;font-style:italic;font-size:clamp(18px,4vw,24px);color:rgba(246,240,231,.86);margin-bottom:24px}
@@ -294,6 +302,7 @@ input.err{border-color:#c0563f;box-shadow:0 0 0 3px rgba(192,86,63,.16)}
 @media(max-width:720px){.cta-band{background-attachment:scroll;padding:96px 22px}}
 footer{background:var(--ink);color:rgba(246,240,231,.62);padding:64px 0 44px;text-align:center}
 footer .brand{font-family:'Lustria',serif;font-size:22px;letter-spacing:.4em;text-indent:.4em;text-transform:uppercase;color:#fff;margin-bottom:16px}
+footer .logo-mark{width:58px;margin:0 auto 14px}
 footer a{color:var(--gold-soft);text-decoration:none}
 footer a:hover{text-decoration:underline}
 .foot-links{margin:20px 0;display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-size:14px}
@@ -354,6 +363,19 @@ footer a:hover{text-decoration:underline}
   <a href="#zapis" class="hero-badge" data-track="click_cta_badge" aria-label="Odbierz voucher minus 30 procent na pierwsz&#261; wizyt&#281;"><b>&minus;30%</b><span>VOUCHER</span></a>
   <div class="hero-frame">
     <span class="eyebrow">Wkr&oacute;tce w Jaros&#322;awiu</span>
+    <svg class="logo-mark" viewBox="0 0 120 120" role="img" aria-label="Sabai">
+      <path d="M40.5 108.2A52 52 0 1 1 79.5 108.2" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
+      <g fill="currentColor" opacity=".8">
+        <rect x="4.6" y="56.6" width="6.8" height="6.8" transform="rotate(45 8 60)"/>
+        <rect x="108.6" y="56.6" width="6.8" height="6.8" transform="rotate(45 112 60)"/>
+      </g>
+      <g transform="translate(60 100) scale(.32 -.32)" fill="currentColor" stroke="none" opacity=".6">
+        <path d="M0 17c-20-5-35-20-40-40 20 5 35 20 40 40z"/>
+        <path d="M0 17c20-5 35-20 40-40-20 5-35 20-40 40z"/>
+      </g>
+      <path d="M60 94v8" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".6"/>
+      <text x="60" y="79" text-anchor="middle" font-family="Lustria, Georgia, serif" font-size="56" fill="currentColor">S</text>
+    </svg>
     <span class="brand">Sabai</span>
     <h1>Masa&#380; tajski<em>jakiego jeszcze nie znasz</em></h1>
     <p class="hero-tag">Miejsce, w kt&oacute;rym czas zwalnia.</p>
@@ -515,6 +537,19 @@ footer a:hover{text-decoration:underline}
 <!-- ================= STOPKA ================= -->
 <footer>
   <div class="wrap">
+    <svg class="logo-mark" viewBox="0 0 120 120" role="img" aria-label="Sabai">
+      <path d="M40.5 108.2A52 52 0 1 1 79.5 108.2" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
+      <g fill="currentColor" opacity=".8">
+        <rect x="4.6" y="56.6" width="6.8" height="6.8" transform="rotate(45 8 60)"/>
+        <rect x="108.6" y="56.6" width="6.8" height="6.8" transform="rotate(45 112 60)"/>
+      </g>
+      <g transform="translate(60 100) scale(.32 -.32)" fill="currentColor" stroke="none" opacity=".6">
+        <path d="M0 17c-20-5-35-20-40-40 20 5 35 20 40 40z"/>
+        <path d="M0 17c20-5 35-20 40-40-20 5-35 20-40 40z"/>
+      </g>
+      <path d="M60 94v8" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".6"/>
+      <text x="60" y="79" text-anchor="middle" font-family="Lustria, Georgia, serif" font-size="56" fill="currentColor">S</text>
+    </svg>
     <div class="brand">Sabai</div>
     <p>Masa&#380; tajski. Ju&#380; wkr&oacute;tce w Jaros&#322;awiu.</p>
     <div class="foot-links">
